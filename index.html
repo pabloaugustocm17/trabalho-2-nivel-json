@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trabalho 2 - Pablo Magalhães</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+</head>
+<body>
+<script>
+    const config = {
+        type: Phaser.AUTO,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        physics: {
+            default: 'arcade',
+            arcade: {
+                gravity: { y: 300 },
+                debug: false
+            }
+        },
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        }
+    };
+
+    const game = new Phaser.Game(config);
+
+    let levelData;
+    let blocks;
+    let coins;
+
+    function preload() {
+        this.load.image('block', 'https://labs.phaser.io/assets/sprites/block.png');
+        this.load.image('coin', 'https://labs.phaser.io/assets/sprites/coin.png');
+    }
+
+    function create() {
+        blocks = this.physics.add.staticGroup();
+        coins = this.physics.add.group();
+
+        this.input.keyboard.on('keydown-SPACE', loadLevel, this);
+    }
+
+    function update() {
+    }
+
+    function loadLevel() {
+        
+        fetch('https://raw.githubusercontent.com/pabloaugustocm17/trabalho-2-nivel-json/refs/heads/master/level.json')
+            .then(response => response.json())
+            .then(json => {
+                levelData = json;
+                buildLevel(levelData);
+            })
+            .catch(err => console.error('Erro ao carregar o nível:', err));
+    }
+
+    function buildLevel(data) {
+        blocks.clear(true, true);
+        coins.clear(true, true);
+
+        data.objects.forEach(obj => {
+            if (obj.type === 'block') {
+                const block = blocks.create(obj.x, obj.y, 'block');
+                block.setSize(obj.width, obj.height).setOrigin(0);
+            } else if (obj.type === 'coin') {
+                const coin = coins.create(obj.x, obj.y, 'coin');
+                coin.setBounce(0.5);
+            }
+        });
+    }
+</script>
+</body>
+</html>
